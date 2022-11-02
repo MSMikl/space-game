@@ -8,21 +8,21 @@ from itertools import cycle
 from curses_tools import draw_frame, read_controls
 
 
-async def blink(canvas, row, column, symbol='*'):
+async def blink(canvas, row, column, symbol='*', offset_tics=1):
     while True:
-        for _ in range (random.randint(5, 20)):
+        for _ in range (offset_tics*20):
             canvas.addstr(row, column, symbol, curses.A_DIM)
             await asyncio.sleep(0)
 
-        for _ in range (random.randint(2, 5)):
+        for _ in range (offset_tics*3):
             canvas.addstr(row, column, symbol, curses.A_DIM)
             await asyncio.sleep(0)
 
-        for _ in range (random.randint(4, 12)):
+        for _ in range (offset_tics*5):
             canvas.addstr(row, column, symbol, curses.A_BOLD)
             await asyncio.sleep(0)
 
-        for _ in range (random.randint(3, 9)):
+        for _ in range (offset_tics*3):
             canvas.addstr(row, column, symbol)
             await asyncio.sleep(0)
 
@@ -95,6 +95,7 @@ def draw(canvas):
         row=random.randint(1, y-1),
         column=random.randint(1, x-1),
         symbol=random.choice('+*.:'),
+        offset_tics=random.randint(1, 3),
         ) for _ in range (random.randint(50, 100))]
     is_shot = True
     while True:
