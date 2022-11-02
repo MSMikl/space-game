@@ -1,9 +1,11 @@
 import asyncio
 import curses
+import os
 import random
 import time
 
 from itertools import cycle
+from os.path import isfile, join
 
 from curses_tools import draw_frame, read_controls
 
@@ -80,17 +82,19 @@ async def render_spaceship(canvas, column, row, frames):
 
 def draw(canvas):
     canvas.nodelay(True)
-    with open('./pics/rocket_frame_1.txt') as file:
-        frame1 = file.read()
-    print(frame1)
-    with open('./pics/rocket_frame_2.txt') as file:
-        frame2 = file.read()
-    print(frame2)
-    frames = [frame1 for _ in range(2)] + [frame2 for _ in range(2)]
+    base_path = os.getcwd()
+    frames = []
+    for filename in os.listdir(join(base_path, 'pics')):
+        full_path = join(base_path, 'pics', filename)
+        if isfile(full_path):
+            with open(full_path) as file:
+                frames.append(file.read())
+    multipled_frames = [frame for frame in frames for _ in range(2)]
+    print(multipled_frames)
     curses.curs_set(False)
     y, x = canvas.getmaxyx()
     shot = fire(canvas, y//2, x//2)
-    animation = render_spaceship(canvas, 5, 5, frames)
+    animation = render_spaceship(canvas, 5, 5, multipled_frames)
     coroutines = [blink(
         canvas,
         row=random.randint(1, y-1),
