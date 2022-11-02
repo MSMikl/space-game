@@ -8,7 +8,7 @@
 
 Скачайте код на компьютер, установите зависимости выполнив команду
 
-  pip install -r requirements.txt
+    pip install -r requirements.txt
   
 ## Запуск
 
