@@ -58,13 +58,12 @@ async def fire(canvas, start_row, start_column, rows_speed=0.3, columns_speed=0)
 
 
 async def render_spaceship(canvas, column, row, frames):
-    iterator = cycle(frames)
     space = False
     size = canvas.getmaxyx()
     # Максимальные координаты окна на единицу меньше размера, поскольку нумерация начинается с 0
     max_y = size[0] - 1
     max_x = size[1] - 1
-    for frame in iterator:
+    for frame in cycle(frames):
         if space:
             break
         draw_frame(canvas, row, column, frame)
