@@ -57,7 +57,7 @@ async def fire(canvas, start_row, start_column, rows_speed=0.3, columns_speed=0)
         column += columns_speed
 
 
-async def spaceship(canvas, column, row, frames):
+async def render_spaceship(canvas, column, row, frames):
     iterator = cycle(frames)
     frame = next(iterator)
     space = False
@@ -89,7 +89,7 @@ def draw(canvas):
     curses.curs_set(False)
     y, x = canvas.getmaxyx()
     shot = fire(canvas, y//2, x//2)
-    animation = spaceship(canvas, 5, 5, frames)
+    animation = render_spaceship(canvas, 5, 5, frames)
     coroutines = [blink(
         canvas,
         row=random.randint(1, y-1),
