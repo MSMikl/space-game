@@ -59,22 +59,24 @@ async def fire(canvas, start_row, start_column, rows_speed=0.3, columns_speed=0)
 
 async def render_spaceship(canvas, column, row, frames):
     iterator = cycle(frames)
-    frame = next(iterator)
     space = False
-    max_y, max_x = canvas.getmaxyx()
-    while not space:
+    size = canvas.getmaxyx()
+    # Максимальные координаты окна на единицу меньше размера, поскольку нумерация начинается с 0
+    max_y = size[0] - 1
+    max_x = size[1] - 1
+    for frame in iterator:
+        if space:
+            break
         draw_frame(canvas, row, column, frame)
         move_x = 0
         move_y = 0
-        for _ in range(2):
-            (y, x, space) = read_controls(canvas)
-            move_x += x
-            move_y += y
-            await asyncio.sleep(0)
+        (y, x, space) = read_controls(canvas)
+        move_x += x
+        move_y += y
+        await asyncio.sleep(0)
         draw_frame(canvas, row, column, frame, negative=True)
         column = min(column + move_x, max_x - 6) if move_x >= 0 else max(column + move_x, 1)
         row = min(row + move_y, max_y - 10) if move_y >= 0 else max(row + move_y, 1)
-        frame = next(iterator)
 
 
 def draw(canvas):
@@ -85,7 +87,7 @@ def draw(canvas):
     with open('./pics/rocket_frame_2.txt') as file:
         frame2 = file.read()
     print(frame2)
-    frames = [frame1, frame2]
+    frames = [frame1 for _ in range(2)] + [frame2 for _ in range(2)]
     curses.curs_set(False)
     y, x = canvas.getmaxyx()
     shot = fire(canvas, y//2, x//2)
