@@ -68,14 +68,14 @@ async def render_spaceship(canvas, column, row, frames):
     ship_length = 8
     exit = False
     for frame in cycle(frames):
+        step_y, step_x, _, exit = read_controls(canvas)
         if exit:
             break
-        draw_frame(canvas, row, column, frame)
-        step_y, step_x, _, exit = read_controls(canvas)
-        await asyncio.sleep(0)
-        draw_frame(canvas, row, column, frame, negative=True)
         column = min(column + step_x, max_x - ship_width) if step_x >= 0 else max(column + step_x, 1)
         row = min(row + step_y, max_y - ship_length) if step_y >= 0 else max(row + step_y, 1)
+        draw_frame(canvas, row, column, frame)
+        await asyncio.sleep(0)
+        draw_frame(canvas, row, column, frame, negative=True)
 
 
 def draw(canvas):
