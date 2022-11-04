@@ -3,6 +3,7 @@ LEFT_KEY_CODE = 260
 RIGHT_KEY_CODE = 261
 UP_KEY_CODE = 259
 DOWN_KEY_CODE = 258
+EXIT_KEY_CODE = 3
 
 
 def read_controls(canvas):
@@ -10,6 +11,7 @@ def read_controls(canvas):
     
     rows_direction = columns_direction = 0
     space_pressed = False
+    exit = False
 
     while True:
         pressed_key_code = canvas.getch()
@@ -32,13 +34,16 @@ def read_controls(canvas):
 
         if pressed_key_code == SPACE_KEY_CODE:
             space_pressed = True
+
+        if pressed_key_code == EXIT_KEY_CODE:
+            exit = True
     
-    return rows_direction, columns_direction, space_pressed
+    return rows_direction, columns_direction, space_pressed, exit
 
 
 def draw_frame(canvas, start_row, start_column, text, negative=False):
     """Draw multiline text fragment on canvas, erase text instead of drawing if negative=True is specified."""
-    
+
     rows_number, columns_number = canvas.getmaxyx()
 
     for row, line in enumerate(text.splitlines(), round(start_row)):
