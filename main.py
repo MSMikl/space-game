@@ -12,19 +12,19 @@ from curses_tools import draw_frame, read_controls
 
 async def blink(canvas, row, column, symbol='*', offset_tics=1):
     while True:
-        for _ in range (offset_tics*20):
+        for _ in range(offset_tics*20):
             canvas.addstr(row, column, symbol, curses.A_DIM)
             await asyncio.sleep(0)
 
-        for _ in range (offset_tics*3):
+        for _ in range(offset_tics*3):
             canvas.addstr(row, column, symbol, curses.A_DIM)
             await asyncio.sleep(0)
 
-        for _ in range (offset_tics*5):
+        for _ in range(offset_tics*5):
             canvas.addstr(row, column, symbol, curses.A_BOLD)
             await asyncio.sleep(0)
 
-        for _ in range (offset_tics*3):
+        for _ in range(offset_tics*3):
             canvas.addstr(row, column, symbol)
             await asyncio.sleep(0)
 
@@ -112,7 +112,6 @@ def draw(canvas):
                 coroutine.send(None)
             except StopIteration:
                 coroutines.remove(shot)
-
         canvas.refresh()
         time.sleep(0.1)
 
