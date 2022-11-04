@@ -60,7 +60,6 @@ async def fire(canvas, start_row, start_column, rows_speed=0.3, columns_speed=0)
 
 
 async def render_spaceship(canvas, column, row, frames):
-    space = False
     size = canvas.getmaxyx()
     # Максимальные координаты окна на единицу меньше размера, поскольку нумерация начинается с 0
     max_y = size[0] - 1
@@ -68,10 +67,8 @@ async def render_spaceship(canvas, column, row, frames):
     ship_width = 6
     ship_length = 8
     for frame in cycle(frames):
-        if space:
-            break
         draw_frame(canvas, row, column, frame)
-        (step_y, step_x, space) = read_controls(canvas)
+        step_y, step_x, _ = read_controls(canvas)
         await asyncio.sleep(0)
         draw_frame(canvas, row, column, frame, negative=True)
         column = min(column + step_x, max_x - ship_width) if step_x >= 0 else max(column + step_x, 1)
@@ -88,17 +85,16 @@ def draw(canvas):
             with open(full_path) as file:
                 frames.append(file.read())
     y, x = canvas.getmaxyx()
+    curses.curs_set(False)
     coroutines = [blink(
         canvas,
         row=random.randint(1, y-1),
         column=random.randint(1, x-1),
         symbol=random.choice('+*.:'),
         offset_tics=random.randint(1, 3),
-        ) for _ in range (random.randint(50, 100))]
-    
+        ) for _ in range(random.randint(50, 100))]
+
     multipled_frames = [frame for frame in frames for _ in range(2)]
-    print(multipled_frames)
-    curses.curs_set(False)
     shot = fire(canvas, y//2, x//2)
     coroutines.append(shot)
     coroutines.append(render_spaceship(canvas, 5, 5, multipled_frames))
