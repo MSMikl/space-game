@@ -8,6 +8,7 @@ from itertools import cycle
 from os.path import isfile, join
 
 from curses_tools import draw_frame, read_controls, get_frame_size
+from physics import update_speed
 from space_garbage import fly_garbage
 
 
@@ -79,13 +80,15 @@ async def render_spaceship(canvas, column, row, frames):
     max_y = size[0] - 1
     max_x = size[1] - 1
     ship_length, ship_width = get_frame_size(frames[0])
+    row_speed = column_speed = 0
     exit = False
     for frame in cycle(frames):
         step_y, step_x, _, exit = read_controls(canvas)
+        row_speed, column_speed = update_speed(row_speed, column_speed, step_y, step_x)
         if exit:
             break
-        column = min(column + step_x, max_x - ship_width) if step_x >= 0 else max(column + step_x, 0)
-        row = min(row + step_y, max_y - ship_length) if step_y >= 0 else max(row + step_y, 0)
+        column = min(column + column_speed, max_x - ship_width) if column_speed >= 0 else max(column + column_speed, 0)
+        row = min(row + row_speed, max_y - ship_length) if row_speed >= 0 else max(row + row_speed, 0)
         draw_frame(canvas, row, column, frame)
         await sleep(1)
         draw_frame(canvas, row, column, frame, negative=True)
