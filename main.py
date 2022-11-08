@@ -86,9 +86,16 @@ async def fill_orbit_with_garbage(canvas, garbage_frames):
         await sleep(10)
 
 
+async def game_over(canvas, row, column, frames):
+    while True:
+        draw_frame(canvas, row, column, frames[0])
+        await sleep(1)
+
+
+
 
 async def render_spaceship(canvas, column, row, frames):
-    global EVENT_LOOP
+    global EVENT_LOOP, OBSCTACLES
     size = canvas.getmaxyx()
     # Максимальные координаты окна на единицу меньше размера, поскольку нумерация начинается с 0
     max_y = size[0] - 1
@@ -104,6 +111,9 @@ async def render_spaceship(canvas, column, row, frames):
         column = min(column + column_speed, max_x - ship_width) if column_speed >= 0 else max(column + column_speed, 0)
         row = min(row + row_speed, max_y - ship_length) if row_speed >= 0 else max(row + row_speed, 0)
         draw_frame(canvas, row, column, frame)
+        for obstacle in OBSCTACLES:
+            if has_collision((obstacle.row, obstacle.column), (obstacle.rows_size, obstacle.columns_size), (row, column), (ship_length, ship_width)):
+                return
         if space:
             EVENT_LOOP.append(fire(canvas, row, column + ship_width//2, rows_speed = -2 + row_speed))
         await sleep(1)
@@ -125,6 +135,7 @@ def draw(canvas):
     base_path = os.getcwd()
     rocket_frames = load_frames(join(base_path, 'pics', 'rocket'))
     garbage_frames = load_frames(join(base_path, 'pics', 'garbage'))
+    gameover_frame = load_frames(join(base_path, 'pics', 'gameover'))
     y, x = canvas.getmaxyx()
     curses.curs_set(False)
     global EVENT_LOOP, OBSCTACLES
@@ -146,7 +157,7 @@ def draw(canvas):
                 coroutine.send(None)
             except StopIteration:
                 if coroutine.__name__ == 'render_spaceship':
-                    break
+                    EVENT_LOOP.append(game_over(canvas, 3, 3, gameover_frame))
                 EVENT_LOOP.remove(coroutine)
         canvas.refresh()
         time.sleep(0.1)
