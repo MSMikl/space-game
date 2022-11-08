@@ -75,6 +75,7 @@ async def fill_orbit_with_garbage(canvas, garbage_frames):
 
 
 async def render_spaceship(canvas, column, row, frames):
+    global EVENT_LOOP
     size = canvas.getmaxyx()
     # Максимальные координаты окна на единицу меньше размера, поскольку нумерация начинается с 0
     max_y = size[0] - 1
@@ -83,13 +84,15 @@ async def render_spaceship(canvas, column, row, frames):
     row_speed = column_speed = 0
     exit = False
     for frame in cycle(frames):
-        step_y, step_x, _, exit = read_controls(canvas)
+        step_y, step_x, space, exit = read_controls(canvas)
         row_speed, column_speed = update_speed(row_speed, column_speed, step_y, step_x)
         if exit:
             break
         column = min(column + column_speed, max_x - ship_width) if column_speed >= 0 else max(column + column_speed, 0)
         row = min(row + row_speed, max_y - ship_length) if row_speed >= 0 else max(row + row_speed, 0)
         draw_frame(canvas, row, column, frame)
+        if space:
+            EVENT_LOOP.append(fire(canvas, row, column + ship_width//2, rows_speed = -2 + row_speed))
         await sleep(1)
         draw_frame(canvas, row, column, frame, negative=True)
 
@@ -121,7 +124,6 @@ def draw(canvas):
         ) for _ in range(random.randint(50, 100))]
 
     multipled_rocket_frames = [frame for frame in rocket_frames for _ in range(2)]
-    # shot = fire(canvas, y//2, x//2)
     EVENT_LOOP.append(render_spaceship(canvas, 5, 5, multipled_rocket_frames))
     EVENT_LOOP.append(fill_orbit_with_garbage(canvas, garbage_frames))
     while True:
