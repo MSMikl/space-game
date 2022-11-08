@@ -10,9 +10,11 @@ from os.path import isfile, join
 from curses_tools import draw_frame, read_controls, get_frame_size
 from physics import update_speed
 from space_garbage import fly_garbage
+from obstacles import Obstacle, show_obstacles
 
 
 EVENT_LOOP = []
+OBSCTACLES = []
 
 
 async def sleep(tics=1):
@@ -66,10 +68,15 @@ async def fire(canvas, start_row, start_column, rows_speed=0.3, columns_speed=0)
 
 
 async def fill_orbit_with_garbage(canvas, garbage_frames):
-    max_y = canvas.getmaxyx()[1] - 1
+    max_x = canvas.getmaxyx()[1] - 1
     global EVENT_LOOP
     while True:
-        EVENT_LOOP.append(fly_garbage(canvas, random.randint(0, max_y), random.choice(garbage_frames), speed=0.2))
+        start_column = random.randint(0, max_x)
+        frame = random.choice(garbage_frames)
+        frame_height, frame_width = get_frame_size(frame)
+        obstacle = Obstacle(0, start_column, frame_height, frame_width)
+        OBSCTACLES.append(obstacle)
+        EVENT_LOOP.append(fly_garbage(canvas, start_column, frame, speed=0.2, obstacle=obstacle))
         await sleep(10)
 
 
@@ -114,7 +121,7 @@ def draw(canvas):
     garbage_frames = load_frames(join(base_path, 'pics', 'garbage'))
     y, x = canvas.getmaxyx()
     curses.curs_set(False)
-    global EVENT_LOOP
+    global EVENT_LOOP, OBSCTACLES
     EVENT_LOOP += [blink(
         canvas,
         row=random.randint(1, y-1),
@@ -126,12 +133,14 @@ def draw(canvas):
     multipled_rocket_frames = [frame for frame in rocket_frames for _ in range(2)]
     EVENT_LOOP.append(render_spaceship(canvas, 5, 5, multipled_rocket_frames))
     EVENT_LOOP.append(fill_orbit_with_garbage(canvas, garbage_frames))
+    EVENT_LOOP.append(show_obstacles(canvas, OBSCTACLES))
     while True:
         for coroutine in EVENT_LOOP.copy():
             try: 
                 coroutine.send(None)
             except StopIteration:
                 if coroutine.__name__ == 'render_spaceship':
+                    print([obstacle.row for obstacle in OBSCTACLES])
                     break
                 EVENT_LOOP.remove(coroutine)
         canvas.refresh()
