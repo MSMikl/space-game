@@ -14,23 +14,24 @@ from space_garbage import fly_garbage
 EVENT_LOOP = []
 
 
+async def sleep(tics=1):
+    for _ in range(tics):
+        await asyncio.sleep(0)
+
+
 async def blink(canvas, row, column, symbol='*', offset_tics=1):
     while True:
-        for _ in range(offset_tics*20):
-            canvas.addstr(row, column, symbol, curses.A_DIM)
-            await asyncio.sleep(0)
+        canvas.addstr(row, column, symbol, curses.A_DIM)
+        await sleep(offset_tics*20)
 
-        for _ in range(offset_tics*3):
-            canvas.addstr(row, column, symbol, curses.A_DIM)
-            await asyncio.sleep(0)
+        canvas.addstr(row, column, symbol, curses.A_DIM)
+        await sleep(offset_tics*3)
 
-        for _ in range(offset_tics*5):
-            canvas.addstr(row, column, symbol, curses.A_BOLD)
-            await asyncio.sleep(0)
+        canvas.addstr(row, column, symbol, curses.A_BOLD)
+        await sleep(offset_tics*5)
 
-        for _ in range(offset_tics*3):
-            canvas.addstr(row, column, symbol)
-            await asyncio.sleep(0)
+        canvas.addstr(row, column, symbol)
+        await sleep(offset_tics*3)
 
 
 async def fire(canvas, start_row, start_column, rows_speed=0.3, columns_speed=0):
@@ -39,10 +40,10 @@ async def fire(canvas, start_row, start_column, rows_speed=0.3, columns_speed=0)
     row, column = start_row, start_column
 
     canvas.addstr(round(row), round(column), '*')
-    await asyncio.sleep(0)
+    await sleep(1)
 
     canvas.addstr(round(row), round(column), 'O')
-    await asyncio.sleep(0)
+    await sleep(1)
     canvas.addstr(round(row), round(column), ' ')
 
     row += rows_speed
@@ -57,7 +58,7 @@ async def fire(canvas, start_row, start_column, rows_speed=0.3, columns_speed=0)
 
     while 0 < row < max_row and 0 < column < max_column:
         canvas.addstr(round(row), round(column), symbol)
-        await asyncio.sleep(0)
+        await sleep(1)
         canvas.addstr(round(row), round(column), ' ')
         row += rows_speed
         column += columns_speed
@@ -68,8 +69,7 @@ async def fill_orbit_with_garbage(canvas, garbage_frames):
     global EVENT_LOOP
     while True:
         EVENT_LOOP.append(fly_garbage(canvas, random.randint(0, max_y), random.choice(garbage_frames), speed=0.2))
-        for _ in range(10):
-            await asyncio.sleep(0)
+        await sleep(10)
 
 
 
@@ -87,7 +87,7 @@ async def render_spaceship(canvas, column, row, frames):
         column = min(column + step_x, max_x - ship_width) if step_x >= 0 else max(column + step_x, 0)
         row = min(row + step_y, max_y - ship_length) if step_y >= 0 else max(row + step_y, 0)
         draw_frame(canvas, row, column, frame)
-        await asyncio.sleep(0)
+        await sleep(1)
         draw_frame(canvas, row, column, frame, negative=True)
 
 
