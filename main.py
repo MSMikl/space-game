@@ -8,9 +8,10 @@ from itertools import cycle
 from os.path import isfile, join
 
 from curses_tools import draw_frame, read_controls, get_frame_size
+from explosion import explode
+from obstacles import Obstacle, show_obstacles, has_collision
 from physics import update_speed
 from space_garbage import fly_garbage
-from obstacles import Obstacle, show_obstacles, has_collision
 
 
 EVENT_LOOP = []
@@ -38,10 +39,7 @@ async def blink(canvas, row, column, symbol='*', offset_tics=1):
 
 
 async def fire(canvas, start_row, start_column, rows_speed=0.3, columns_speed=0):
-    """Display animation of gun shot, direction and speed can be specified."""
-
     row, column = start_row, start_column
-
     canvas.addstr(round(row), round(column), '*')
     await sleep(1)
 
@@ -66,6 +64,7 @@ async def fire(canvas, start_row, start_column, rows_speed=0.3, columns_speed=0)
             if has_collision((obstacle.row, obstacle.column), (obstacle.rows_size, obstacle.columns_size), (row, column)):
                 obstacle.row = -1
                 OBSCTACLES.remove(obstacle)
+                EVENT_LOOP.append(explode(canvas, row, column))
                 return
         canvas.addstr(round(row), round(column), symbol)
         await sleep(1)
