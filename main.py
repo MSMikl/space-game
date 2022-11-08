@@ -59,11 +59,13 @@ async def fire(canvas, start_row, start_column, rows_speed=0.3, columns_speed=0)
 
     curses.beep()
 
-    global OBSCTACLES
+    global OBSCTACLES, EVENT_LOOP
 
     while 0 < row < max_row and 0 < column < max_column:
         for obstacle in OBSCTACLES.copy():
             if has_collision((obstacle.row, obstacle.column), (obstacle.rows_size, obstacle.columns_size), (row, column)):
+                obstacle.row = -1
+                OBSCTACLES.remove(obstacle)
                 return
         canvas.addstr(round(row), round(column), symbol)
         await sleep(1)

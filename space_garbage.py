@@ -15,4 +15,6 @@ async def fly_garbage(canvas, column, garbage_frame, speed=0.5, obstacle=None):
         await asyncio.sleep(0)
         draw_frame(canvas, row, column, garbage_frame, negative=True)
         row += speed
+        if obstacle.row < 0:
+            return
         obstacle.row += speed
