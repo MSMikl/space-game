@@ -10,7 +10,7 @@ from os.path import isfile, join
 from curses_tools import draw_frame, read_controls, get_frame_size
 from physics import update_speed
 from space_garbage import fly_garbage
-from obstacles import Obstacle, show_obstacles
+from obstacles import Obstacle, show_obstacles, has_collision
 
 
 EVENT_LOOP = []
@@ -59,7 +59,12 @@ async def fire(canvas, start_row, start_column, rows_speed=0.3, columns_speed=0)
 
     curses.beep()
 
+    global OBSCTACLES
+
     while 0 < row < max_row and 0 < column < max_column:
+        for obstacle in OBSCTACLES.copy():
+            if has_collision((obstacle.row, obstacle.column), (obstacle.rows_size, obstacle.columns_size), (row, column)):
+                return
         canvas.addstr(round(row), round(column), symbol)
         await sleep(1)
         canvas.addstr(round(row), round(column), ' ')
@@ -140,7 +145,6 @@ def draw(canvas):
                 coroutine.send(None)
             except StopIteration:
                 if coroutine.__name__ == 'render_spaceship':
-                    print([obstacle.row for obstacle in OBSCTACLES])
                     break
                 EVENT_LOOP.remove(coroutine)
         canvas.refresh()
