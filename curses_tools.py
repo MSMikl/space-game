@@ -59,7 +59,7 @@ def draw_frame(canvas, start_row, start_column, text, negative=False):
 
             if column >= columns_number:
                 break
-                
+
             if symbol == ' ':
                 continue
 
@@ -79,4 +79,4 @@ def get_frame_size(text):
     lines = text.splitlines()
     rows = len(lines)
     columns = max([len(line) for line in lines])
-    return rows, columns
+    return rows - 1, columns - 1
