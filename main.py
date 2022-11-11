@@ -17,8 +17,8 @@ from space_garbage import fly_garbage
 
 
 EVENT_LOOP = []
-OBSCTACLES = []
-YEAR = 2020
+OBSTACLES = []
+YEAR = 1957
 
 
 async def sleep(tics=1):
@@ -81,10 +81,10 @@ async def fire(canvas, start_row, start_column, rows_speed=0.3, columns_speed=0)
     curses.beep()
 
     while 0 < row < max_row and 0 < column < max_column:
-        for obstacle in OBSCTACLES.copy():
+        for obstacle in OBSTACLES.copy():
             if has_collision((obstacle.row, obstacle.column), (obstacle.rows_size, obstacle.columns_size), (row, column)):
                 obstacle.row = -1
-                OBSCTACLES.remove(obstacle)
+                OBSTACLES.remove(obstacle)
                 EVENT_LOOP.append(explode(canvas, row, column))
                 return
         canvas.addstr(round(row), round(column), symbol)
@@ -95,16 +95,20 @@ async def fire(canvas, start_row, start_column, rows_speed=0.3, columns_speed=0)
 
 
 async def fill_orbit_with_garbage(canvas, garbage_frames):
-    max_x = canvas.getmaxyx()[1] - 1
+    max_rows, max_columns = canvas.getmaxyx()
     while True:
+        for obstacle in OBSTACLES.copy():
+            if obstacle.row >= max_rows:
+                OBSTACLES.remove(obstacle)
+                continue
         if not get_garbage_delay_tics(YEAR):
             await sleep(15)
             continue
-        start_column = random.randint(0, max_x)
+        start_column = random.randint(0, max_columns - 1)
         frame = random.choice(garbage_frames)
         frame_height, frame_width = get_frame_size(frame)
         obstacle = Obstacle(0, start_column, frame_height, frame_width)
-        OBSCTACLES.append(obstacle)
+        OBSTACLES.append(obstacle)
         EVENT_LOOP.append(fly_garbage(canvas, start_column, frame, speed=0.2, obstacle=obstacle))
         await sleep(get_garbage_delay_tics(YEAR))
 
@@ -131,7 +135,7 @@ async def render_spaceship(canvas, column, row, frames):
         column = min(column + column_speed, max_x - ship_width) if column_speed >= 0 else max(column + column_speed, 0)
         row = min(row + row_speed, max_y - ship_length) if row_speed >= 0 else max(row + row_speed, 0)
         draw_frame(canvas, row, column, frame)
-        for obstacle in OBSCTACLES:
+        for obstacle in OBSTACLES:
             if has_collision((obstacle.row, obstacle.column), (obstacle.rows_size, obstacle.columns_size), (row, column), (ship_length, ship_width)):
                 draw_frame(canvas, row, column, frame, negative=True)
                 return
@@ -172,7 +176,7 @@ def draw(canvas):
     multipled_rocket_frames = [frame for frame in rocket_frames for _ in range(2)]
     EVENT_LOOP.append(render_spaceship(canvas, 5, 5, multipled_rocket_frames))
     EVENT_LOOP.append(fill_orbit_with_garbage(canvas, garbage_frames))
-    # EVENT_LOOP.append(show_obstacles(canvas, OBSCTACLES))
+    EVENT_LOOP.append(show_obstacles(canvas, OBSTACLES))
     EVENT_LOOP.append(change_year())
     EVENT_LOOP.append(show_text(year_window))
     while True:

@@ -48,10 +48,7 @@ async def show_obstacles(canvas, obstacles):
     while True:
         boxes = []
 
-        for obstacle in obstacles.copy():
-            if obstacle.row >= max_rows:
-                obstacles.remove(obstacle)
-                continue
+        for obstacle in obstacles:
             boxes.append(obstacle.dump_bounding_box())
 
         for row, column, frame in boxes:
