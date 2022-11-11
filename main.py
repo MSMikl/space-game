@@ -18,7 +18,7 @@ from space_garbage import fly_garbage
 
 EVENT_LOOP = []
 OBSCTACLES = []
-YEAR = [1957]
+YEAR = 2020
 
 
 async def sleep(tics=1):
@@ -30,16 +30,16 @@ async def change_year():
     global YEAR
     while True:
         await sleep(15)
-        YEAR[0] += 1
+        YEAR += 1
 
 
 async def show_text(canvas):
-    current_year = YEAR[0]
-    text = f"{YEAR[0]} {PHRASES.get(YEAR[0], '')}"
+    current_year = YEAR
+    text = f"{YEAR} {PHRASES.get(YEAR, '')}"
     while True:
-        if current_year != YEAR[0]:
-            current_year = YEAR[0]
-            text = str(YEAR[0]) + ' ' + PHRASES.get(YEAR[0], '')
+        if current_year != YEAR:
+            current_year = YEAR
+            text = f"{YEAR} {PHRASES.get(YEAR, '')}"
         canvas.addnstr(text, len(text))
         canvas.refresh()
         await sleep(1)
@@ -80,8 +80,6 @@ async def fire(canvas, start_row, start_column, rows_speed=0.3, columns_speed=0)
 
     curses.beep()
 
-    global OBSCTACLES, EVENT_LOOP
-
     while 0 < row < max_row and 0 < column < max_column:
         for obstacle in OBSCTACLES.copy():
             if has_collision((obstacle.row, obstacle.column), (obstacle.rows_size, obstacle.columns_size), (row, column)):
@@ -98,9 +96,8 @@ async def fire(canvas, start_row, start_column, rows_speed=0.3, columns_speed=0)
 
 async def fill_orbit_with_garbage(canvas, garbage_frames):
     max_x = canvas.getmaxyx()[1] - 1
-    global EVENT_LOOP, YEAR
     while True:
-        if not get_garbage_delay_tics(YEAR[0]):
+        if not get_garbage_delay_tics(YEAR):
             await sleep(15)
             continue
         start_column = random.randint(0, max_x)
@@ -109,7 +106,7 @@ async def fill_orbit_with_garbage(canvas, garbage_frames):
         obstacle = Obstacle(0, start_column, frame_height, frame_width)
         OBSCTACLES.append(obstacle)
         EVENT_LOOP.append(fly_garbage(canvas, start_column, frame, speed=0.2, obstacle=obstacle))
-        await sleep(get_garbage_delay_tics(YEAR[0]))
+        await sleep(get_garbage_delay_tics(YEAR))
 
 
 async def game_over(canvas, row, column, frames):
@@ -119,7 +116,6 @@ async def game_over(canvas, row, column, frames):
 
 
 async def render_spaceship(canvas, column, row, frames):
-    global EVENT_LOOP, OBSCTACLES
     size = canvas.getmaxyx()
     # Максимальные координаты окна на единицу меньше размера, поскольку нумерация начинается с 0
     max_y = size[0] - 1
@@ -139,7 +135,7 @@ async def render_spaceship(canvas, column, row, frames):
             if has_collision((obstacle.row, obstacle.column), (obstacle.rows_size, obstacle.columns_size), (row, column), (ship_length, ship_width)):
                 draw_frame(canvas, row, column, frame, negative=True)
                 return
-        if space and YEAR[0] >= 2020:
+        if space and YEAR >= 2020:
             EVENT_LOOP.append(fire(canvas, row, column + ship_width//2, rows_speed = -2 + row_speed))
         await sleep(1)
         draw_frame(canvas, row, column, frame, negative=True)
@@ -156,7 +152,7 @@ def load_frames(path):
 
 
 def draw(canvas):
-    global EVENT_LOOP, OBSCTACLES, YEAR
+    global EVENT_LOOP
     canvas.nodelay(True)
     base_path = os.getcwd()
     rocket_frames = load_frames(join(base_path, 'pics', 'rocket'))
