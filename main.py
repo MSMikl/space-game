@@ -97,13 +97,12 @@ async def fire(canvas, start_row, start_column, rows_speed=0.3, columns_speed=0)
 async def fill_orbit_with_garbage(canvas, garbage_frames):
     max_rows, max_columns = canvas.getmaxyx()
     while True:
-        for obstacle in OBSTACLES.copy():
-            if obstacle.row >= max_rows:
-                OBSTACLES.remove(obstacle)
-                continue
         if not get_garbage_delay_tics(YEAR):
             await sleep(15)
             continue
+        for obstacle in OBSTACLES.copy():
+            if obstacle.row >= max_rows:
+                OBSTACLES.remove(obstacle)
         start_column = random.randint(0, max_columns - 1)
         frame = random.choice(garbage_frames)
         frame_height, frame_width = get_frame_size(frame)
