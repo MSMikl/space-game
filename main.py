@@ -35,7 +35,7 @@ async def change_year():
 
 async def show_text(canvas):
     current_year = YEAR[0]
-    text = str(YEAR[0]) + ' ' + PHRASES.get(YEAR[0], '')
+    text = f"{YEAR[0]} {PHRASES.get(YEAR[0], '')}"
     while True:
         if current_year != YEAR[0]:
             current_year = YEAR[0]
