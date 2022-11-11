@@ -125,11 +125,11 @@ async def render_spaceship(canvas, column, row, frames):
     max_x = size[1] - 1
     ship_length, ship_width = get_frame_size(frames[0])
     row_speed = column_speed = 0
-    exit = False
+    game_exit = False
     for frame in cycle(frames):
-        step_y, step_x, space, exit = read_controls(canvas)
+        step_y, step_x, space, game_exit = read_controls(canvas)
         row_speed, column_speed = update_speed(row_speed, column_speed, step_y, step_x)
-        if exit:
+        if game_exit:
             break
         column = min(column + column_speed, max_x - ship_width) if column_speed >= 0 else max(column + column_speed, 0)
         row = min(row + row_speed, max_y - ship_length) if row_speed >= 0 else max(row + row_speed, 0)

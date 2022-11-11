@@ -36,9 +36,9 @@ def read_controls(canvas):
             space_pressed = True
 
         if pressed_key_code == EXIT_KEY_CODE:
-            exit = True
+            game_exit = True
     
-    return rows_direction, columns_direction, space_pressed, exit
+    return rows_direction, columns_direction, space_pressed, game_exit
 
 
 def draw_frame(canvas, start_row, start_column, text, negative=False):
