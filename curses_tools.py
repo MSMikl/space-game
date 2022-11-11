@@ -11,7 +11,7 @@ def read_controls(canvas):
     
     rows_direction = columns_direction = 0
     space_pressed = False
-    exit = False
+    game_exit = False
 
     while True:
         pressed_key_code = canvas.getch()

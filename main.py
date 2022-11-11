@@ -114,6 +114,8 @@ async def fill_orbit_with_garbage(canvas, garbage_frames):
 
 async def game_over(canvas, row, column, frames):
     while True:
+        if canvas.getch() == 3:
+            return
         draw_frame(canvas, row, column, frames[0])
         await sleep(1)
 
@@ -184,7 +186,10 @@ def draw(canvas):
                 coroutine.send(None)
             except StopIteration:
                 if coroutine.__name__ == 'render_spaceship':
-                    EVENT_LOOP.append(game_over(canvas, 3, 3, gameover_frame))
+                    EVENT_LOOP = [game_over(canvas, 3, 3, gameover_frame)]
+                    break
+                if coroutine.__name__ == 'game_over':
+                    return
                 EVENT_LOOP.remove(coroutine)
         canvas.refresh()
         time.sleep(0.1)
