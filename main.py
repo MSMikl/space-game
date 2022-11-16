@@ -17,6 +17,7 @@ from space_garbage import fly_garbage
 
 
 EVENT_LOOP = []
+EXIT_TRIGGER = False
 OBSTACLES = []
 YEAR = 1957
 
@@ -115,12 +116,13 @@ async def fill_orbit_with_garbage(canvas, garbage_frames):
 async def game_over(canvas, row, column, frames):
     while True:
         if canvas.getch() == 3:
-            return
+            global EXIT_TRIGGER
+            EXIT_TRIGGER = True
         draw_frame(canvas, row, column, frames[0])
         await sleep(1)
 
 
-async def render_spaceship(canvas, column, row, frames):
+async def render_spaceship(canvas, column, row, frames, gameover_frame):
     size = canvas.getmaxyx()
     # Максимальные координаты окна на единицу меньше размера, поскольку нумерация начинается с 0
     max_y = size[0] - 1
@@ -132,13 +134,15 @@ async def render_spaceship(canvas, column, row, frames):
         step_y, step_x, space, game_exit = read_controls(canvas)
         row_speed, column_speed = update_speed(row_speed, column_speed, step_y, step_x)
         if game_exit:
-            break
+            EVENT_LOOP.append(game_over(canvas, 3, 3, gameover_frame))
+            return
         column = min(column + column_speed, max_x - ship_width) if column_speed >= 0 else max(column + column_speed, 0)
         row = min(row + row_speed, max_y - ship_length) if row_speed >= 0 else max(row + row_speed, 0)
         draw_frame(canvas, row, column, frame)
         for obstacle in OBSTACLES:
             if has_collision((obstacle.row, obstacle.column), (obstacle.rows_size, obstacle.columns_size), (row, column), (ship_length, ship_width)):
                 draw_frame(canvas, row, column, frame, negative=True)
+                EVENT_LOOP.append(game_over(canvas, 3, 3, gameover_frame))
                 return
         if space and YEAR >= 2020:
             EVENT_LOOP.append(fire(canvas, row, column + ship_width//2, rows_speed = -2 + row_speed))
@@ -175,21 +179,16 @@ def draw(canvas):
         ) for _ in range(random.randint(50, 100))]
 
     multipled_rocket_frames = [frame for frame in rocket_frames for _ in range(2)]
-    EVENT_LOOP.append(render_spaceship(canvas, 5, 5, multipled_rocket_frames))
+    EVENT_LOOP.append(render_spaceship(canvas, 5, 5, multipled_rocket_frames, gameover_frame))
     EVENT_LOOP.append(fill_orbit_with_garbage(canvas, garbage_frames))
-    EVENT_LOOP.append(show_obstacles(canvas, OBSTACLES))
+    # EVENT_LOOP.append(show_obstacles(canvas, OBSTACLES))
     EVENT_LOOP.append(change_year())
     EVENT_LOOP.append(show_text(year_window))
-    while True:
+    while not EXIT_TRIGGER:
         for coroutine in EVENT_LOOP.copy():
             try: 
                 coroutine.send(None)
             except StopIteration:
-                if coroutine.__name__ == 'render_spaceship':
-                    EVENT_LOOP = [game_over(canvas, 3, 3, gameover_frame)]
-                    break
-                if coroutine.__name__ == 'game_over':
-                    return
                 EVENT_LOOP.remove(coroutine)
         canvas.refresh()
         time.sleep(0.1)
