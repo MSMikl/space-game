@@ -113,6 +113,10 @@ async def fill_orbit_with_garbage(canvas, garbage_frames):
 
 async def game_over(canvas, row, column, frames):
     while True:
+        if canvas.getch() == 3:
+            global event_loop
+            event_loop = []
+            return
         draw_frame(canvas, row, column, frames[0])
         await sleep(1)
 
@@ -180,7 +184,7 @@ def draw(canvas):
     # event_loop.append(show_obstacles(canvas, obstacles))
     event_loop.append(change_year())
     event_loop.append(show_text(year_window))
-    while True:
+    while event_loop:
         for coroutine in event_loop.copy():
             try: 
                 coroutine.send(None)
