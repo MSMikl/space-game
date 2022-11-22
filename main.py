@@ -20,7 +20,7 @@ obstacles = []
 year = 1957
 
 
-class ExitException(Exception):
+class GameOverException(Exception):
     pass
 
 
@@ -134,14 +134,14 @@ async def render_spaceship(canvas, column, row, frames):
         step_y, step_x, space, game_exit = read_controls(canvas)
         row_speed, column_speed = update_speed(row_speed, column_speed, step_y, step_x)
         if game_exit:
-            raise ExitException()
+            raise GameOverException()
         column = min(column + column_speed, max_x - ship_width) if column_speed >= 0 else max(column + column_speed, 0)
         row = min(row + row_speed, max_y - ship_length) if row_speed >= 0 else max(row + row_speed, 0)
         draw_frame(canvas, row, column, frame)
         for obstacle in obstacles:
             if has_collision((obstacle.row, obstacle.column), (obstacle.rows_size, obstacle.columns_size), (row, column), (ship_length, ship_width)):
                 draw_frame(canvas, row, column, frame, negative=True)
-                raise ExitException()
+                raise GameOverException()
         if space and year >= 2020:
             event_loop.append(fire(canvas, row, column + ship_width//2, rows_speed = -2 + row_speed))
         await sleep(1)
@@ -188,7 +188,7 @@ def draw(canvas):
                 coroutine.send(None)
             except StopIteration:
                 event_loop.remove(coroutine)
-            except ExitException:
+            except GameOverException:
                 event_loop = [game_over(canvas, 10, 10, gameover_frame)]
 
         canvas.refresh()
