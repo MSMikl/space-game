@@ -20,6 +20,10 @@ obstacles = []
 year = 1957
 
 
+class ExitException(Exception):
+    pass
+
+
 async def sleep(tics=1):
     for _ in range(tics):
         await asyncio.sleep(0)
@@ -113,15 +117,11 @@ async def fill_orbit_with_garbage(canvas, garbage_frames):
 
 async def game_over(canvas, row, column, frames):
     while True:
-        if canvas.getch() == 3:
-            global event_loop
-            event_loop = []
-            return
         draw_frame(canvas, row, column, frames[0])
         await sleep(1)
 
 
-async def render_spaceship(canvas, column, row, frames, gameover_frame):
+async def render_spaceship(canvas, column, row, frames):
     global event_loop
     size = canvas.getmaxyx()
     # Максимальные координаты окна на единицу меньше размера, поскольку нумерация начинается с 0
@@ -134,16 +134,14 @@ async def render_spaceship(canvas, column, row, frames, gameover_frame):
         step_y, step_x, space, game_exit = read_controls(canvas)
         row_speed, column_speed = update_speed(row_speed, column_speed, step_y, step_x)
         if game_exit:
-            event_loop = [game_over(canvas, 3, 3, gameover_frame)]
-            return
+            raise ExitException()
         column = min(column + column_speed, max_x - ship_width) if column_speed >= 0 else max(column + column_speed, 0)
         row = min(row + row_speed, max_y - ship_length) if row_speed >= 0 else max(row + row_speed, 0)
         draw_frame(canvas, row, column, frame)
         for obstacle in obstacles:
             if has_collision((obstacle.row, obstacle.column), (obstacle.rows_size, obstacle.columns_size), (row, column), (ship_length, ship_width)):
                 draw_frame(canvas, row, column, frame, negative=True)
-                event_loop = [game_over(canvas, 3, 3, gameover_frame)]
-                return
+                raise ExitException()
         if space and year >= 2020:
             event_loop.append(fire(canvas, row, column + ship_width//2, rows_speed = -2 + row_speed))
         await sleep(1)
@@ -179,18 +177,20 @@ def draw(canvas):
         ) for _ in range(random.randint(50, 100))]
 
     multipled_rocket_frames = [frame for frame in rocket_frames for _ in range(2)]
-    event_loop.append(render_spaceship(canvas, 5, 5, multipled_rocket_frames, gameover_frame))
+    event_loop.append(render_spaceship(canvas, 5, 5, multipled_rocket_frames))
     event_loop.append(fill_orbit_with_garbage(canvas, garbage_frames))
     # event_loop.append(show_obstacles(canvas, obstacles))
     event_loop.append(change_year())
     event_loop.append(show_text(year_window))
-    while event_loop:
+    while True:
         for coroutine in event_loop.copy():
             try: 
                 coroutine.send(None)
             except StopIteration:
-                if coroutine in event_loop:
-                    event_loop.remove(coroutine)
+                event_loop.remove(coroutine)
+            except ExitException:
+                event_loop = [game_over(canvas, 10, 10, gameover_frame)]
+
         canvas.refresh()
         time.sleep(0.1)
 
